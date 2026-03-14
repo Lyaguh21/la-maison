@@ -3,4 +3,4 @@
 	url = https://github.com/Lyaguh21/la-maison-frontend
 [submodule "backend"]
 	path = backend
-	url = https://github.com/Lyaguh21/la-maison-backendscm-history-item:c%3A%5CUsers%5CLyaguh%5CDesktop%5Cla-maison?%7B%22repositoryId%22%3A%22scm0%22%2C%22historyItemId%22%3A%22scm-graph-outgoing-changes%22%2C%22historyItemParentId%22%3A%22cf29db73c1ed2a138261345248b30d76e81cd4dd%22%2C%22historyItemDisplayId%22%3A%220000000%22%7D
+	url = https://github.com/Lyaguh21/la-maison-backend
