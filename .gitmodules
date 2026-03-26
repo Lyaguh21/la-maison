@@ -1,6 +1,10 @@
 [submodule "frontend"]
 	path = frontend
 	url = https://github.com/Lyaguh21/la-maison-frontend
+	branch = main
 [submodule "backend"]
 	path = backend
 	url = https://github.com/Lyaguh21/la-maison-backend
+	branch = main
+
+

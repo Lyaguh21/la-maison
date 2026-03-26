@@ -8,8 +8,9 @@ Fullstack приложение для цифровизации и автомат
 - [2. Стек технологий](#2-стек-технологий)
 - [3. Вкладки и разделы приложения](#3-вкладки-и-разделы-приложения)
 - [4. Фичи приложения](#4-фичи-приложения)
-- [5. Запуск](#5-запуск)
-- [6. Скрины](#6-скрины)
+- [5. Локальный запуск](#5-локальный-запуск)
+- [6. Деплой на VPS](#6-деплой-на-vps)
+- [7. Скрины](#7-скрины)
 
 ## 1. О проекте
 
@@ -82,36 +83,38 @@ La Maison — это CRM для ресторанного бизнеса кото
 - Безопасная авторизация посредством httpOnly cookie jwt
 - Адаптивный дизайн и темная тема
 
-## 5. Запуск
+## 5. Локальный запуск
 
-### Шаг 1. Клонирование
-
-Рекомендуемый вариант (сразу с сабмодулями):
+### 1) Клонирование
 
 ```bash
 git clone --recurse-submodules <REPO_URL>
 cd la-maison
 ```
 
-Если репозиторий уже клонирован без сабмодулей:
+Если клонировали без сабмодулей:
 
 ```bash
 git submodule update --init --recursive
 ```
 
-### Шаг 2. Установка зависимостей
+### 2) Установка зависимостей
 
 ```bash
-cd backend
-npm install
-
-cd ../frontend
-npm install
+cd backend && npm install
+cd ../frontend && npm install
 ```
 
-### Шаг 3. Настройка backend .env
+### 3) Запуск базы данных (локально)
 
-Создайте файл backend/.env:
+```bash
+cd ../backend
+docker compose up -d
+```
+
+### 4) Настройка backend/.env
+
+Создайте файл `backend/.env`:
 
 ```env
 DATABASE_URL="postgresql://admin:admin@localhost:5432/backend_db"
@@ -119,7 +122,6 @@ PORT=3000
 
 JWT_ACCESS_SECRET=access_secret_very_long
 JWT_REFRESH_SECRET=refresh_secret_very_long
-
 JWT_ACCESS_EXPIRES=15m
 JWT_REFRESH_EXPIRES=7d
 
@@ -127,14 +129,7 @@ COOKIE_SECURE=false
 COOKIE_SAMESITE=lax
 ```
 
-### Шаг 4. Поднять PostgreSQL
-
-```bash
-cd backend
-docker-compose up -d
-```
-
-### Шаг 5. Prisma
+### 5) Миграции и Prisma client
 
 ```bash
 cd backend
@@ -142,14 +137,7 @@ npx prisma migrate dev
 npx prisma generate
 ```
 
-Опционально заполнить тестовыми данными:
-
-```bash
-cd backend
-npx ts-node prisma/seed.prod.ts
-```
-
-### Шаг 6. Запустить приложения
+### 6) Запуск приложений
 
 Backend:
 
@@ -171,7 +159,118 @@ npm run dev
 - Backend API: <http://localhost:3000>
 - Swagger: <http://localhost:3000/docs>
 
-## 6. Скрины
+## 6. Деплой на VPS
+
+### 1) Подготовка сервера
+
+На VPS должны быть установлены:
+
+- Docker + Docker Compose plugin
+- Nginx
+- Certbot (для SSL)
+
+### 2) Клонирование проекта
+
+```bash
+git clone --recurse-submodules <REPO_URL>
+cd la-maison
+```
+
+### 3) Настройка .env в корне проекта
+
+Создайте файл `.env` рядом с `docker-compose.yml`:
+
+```env
+JWT_ACCESS_SECRET=very_long_random_secret
+JWT_REFRESH_SECRET=very_long_random_secret
+JWT_ACCESS_EXPIRES=15m
+JWT_REFRESH_EXPIRES=7d
+
+COOKIE_SECURE=false
+COOKIE_SAMESITE=lax
+
+RUN_SEED_PROD=false
+CORS_ORIGIN=http://lyaguh.site
+```
+
+Для HTTPS после выпуска сертификата:
+
+```env
+COOKIE_SECURE=true
+COOKIE_SAMESITE=none
+CORS_ORIGIN=https://lyaguh.site
+```
+
+### 4) Сборка и запуск контейнеров
+
+```bash
+docker compose build --progress=plain
+docker compose up -d
+docker compose ps
+```
+
+### 5) Настройка Nginx (домен -> frontend контейнер)
+
+В `docker-compose.yml` фронтенд публикуется на `8080:80`. Хостовый Nginx должен проксировать домен на `127.0.0.1:8080`.
+
+Пример server-блока:
+
+```nginx
+server {
+  listen 80;
+  listen [::]:80;
+  server_name lyaguh.site www.lyaguh.site;
+
+  location / {
+    proxy_pass http://127.0.0.1:8080;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+}
+```
+
+Проверка и перезагрузка Nginx:
+
+```bash
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+### 6) Выпуск SSL сертификата
+
+```bash
+sudo certbot --nginx -d lyaguh.site -d www.lyaguh.site
+```
+
+Если `www` еще не указывает на VPS, сначала выпускайте только на корень:
+
+```bash
+sudo certbot --nginx -d lyaguh.site
+```
+
+### 7 Seed prod
+
+Чтобы выполнить продовый сид один раз:
+
+1. Установите в `.env`: `RUN_SEED_PROD=true`
+2. Перезапустите backend:
+
+```bash
+docker compose up -d --build backend
+```
+
+3. Проверьте логи:
+
+```bash
+docker compose logs -f --tail=200 backend
+```
+
+4. Верните `RUN_SEED_PROD=false` и снова перезапустите backend.
+
+## 7. Скрины
 
 ### Схема БД
 
