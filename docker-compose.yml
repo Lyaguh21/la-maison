@@ -27,7 +27,7 @@ services:
     environment:
       DATABASE_URL: postgresql://admin:admin@db:5432/backend_db
       PORT: 3000
-      CORS_ORIGIN: http://localhost:8080
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost}
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-change_me_access_secret}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change_me_refresh_secret}
       JWT_ACCESS_EXPIRES: ${JWT_ACCESS_EXPIRES:-15m}
@@ -49,7 +49,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "8080:80"
+      - "80:80"
 
 volumes:
   postgres_data:
