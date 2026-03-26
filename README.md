@@ -173,6 +173,10 @@ npm run dev
 
 ## 6. Скрины
 
+### Схема БД
+
+![Схема](screens/DBscheme.png)
+
 ### Лендинг
 
 ![Лендинг 1](screens/landing-1.png)
