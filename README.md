@@ -9,8 +9,7 @@ Fullstack приложение для цифровизации и автомат
 - [3. Вкладки и разделы приложения](#3-вкладки-и-разделы-приложения)
 - [4. Фичи приложения](#4-фичи-приложения)
 - [5. Запуск](#5-запуск)
-- [6. Docker + CI деплой](#6-docker--ci-деплой)
-- [7. Скрины](#7-скрины)
+- [6. Скрины](#6-скрины)
 
 ## 1. О проекте
 
@@ -172,56 +171,7 @@ npm run dev
 - Backend API: <http://localhost:3000>
 - Swagger: <http://localhost:3000/docs>
 
-## 6. Docker + CI деплой
-
-Чтобы не собирать тяжелые образы на слабом VPS, в проект добавлен CI workflow:
-
-- `.github/workflows/docker-images.yml` — собирает `backend` и `frontend` в GitHub Actions
-- пушит образы в GHCR:
-  - `ghcr.io/<OWNER>/la-maison-backend:<tag>`
-  - `ghcr.io/<OWNER>/la-maison-frontend:<tag>`
-
-### Как запускать на VPS без локального build
-
-1. Создать `.env` рядом с `docker-compose.images.yml`:
-
-```env
-REGISTRY_OWNER=<github_owner>
-APP_TAG=latest
-
-JWT_ACCESS_SECRET=<your_secret>
-JWT_REFRESH_SECRET=<your_secret>
-JWT_ACCESS_EXPIRES=15m
-JWT_REFRESH_EXPIRES=7d
-
-COOKIE_SECURE=true
-COOKIE_SAMESITE=none
-RUN_SEED_PROD=false
-
-CORS_ORIGIN=https://your-domain.com
-```
-
-1. Залогиниться в GHCR на сервере:
-
-```bash
-echo <GHCR_TOKEN> | docker login ghcr.io -u <GITHUB_USERNAME> --password-stdin
-```
-
-1. Поднять проект из готовых образов:
-
-```bash
-docker compose -f docker-compose.images.yml pull
-docker compose -f docker-compose.images.yml up -d
-```
-
-### Обновление на VPS
-
-```bash
-docker compose -f docker-compose.images.yml pull
-docker compose -f docker-compose.images.yml up -d
-```
-
-## 7. Скрины
+## 6. Скрины
 
 ### Схема БД
 
